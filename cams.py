@@ -18,11 +18,16 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-ht', '--httptimeout', type=int, default=1)
     parser.add_argument('-rt', '--rtsptimeout', type=int, default=5)
+    parser.add_argument('-l', '--limit', type=int, default=100)
+    parser.add_argument('-a', '--advancedsearch', default="")
     parser.add_argument('-f', '--file', type=argparse.FileType())
     parser.add_argument('-t', '--filetype', '--type', choices=["json"], default="json")
     namespace = parser.parse_args()
 
     shodan.timeout = 0
+
+    if not os.path.isdir("cams"):
+        os.mkdir("cams")
 
     if not namespace.file:
         if os.path.isfile("SHODAN_TOKEN.txt"):
@@ -35,10 +40,10 @@ if __name__ == '__main__':
         api = shodan.Shodan(token)
         SHODAN_API_KEY.close()
 
-        req = "port:554 country:RU"
+        req = f"port:554 {namespace.advancedsearch}"
 
         try:
-            n = math.ceil(int(api.search(req, limit=1)["total"]) / 100) + 1
+            n = math.ceil(int(api.search(req, limit=1)["total"]) / 500) + 1
         except shodan.exception.APIError:
             print("Incorrect shodan token.")
             sys.exit()
@@ -47,7 +52,7 @@ if __name__ == '__main__':
             Ocr = True
             while Ocr:
                 try:
-                    search = api.search(req, page=p)
+                    search = api.search(req, limit=namespace.limit, page=p)
                     Ocr = False
                 except Exception:
                     print("WAITING")
