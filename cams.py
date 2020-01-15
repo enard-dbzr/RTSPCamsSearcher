@@ -7,6 +7,7 @@ import math
 import argparse
 import sys
 import json
+import os.path
 
 
 def OpenImage(ip):
@@ -24,8 +25,14 @@ if __name__ == '__main__':
     shodan.timeout = 0
 
     if not namespace.file:
-        SHODAN_API_KEY = open("SHODAN_TOKEN.txt", "r")
-        api = shodan.Shodan(SHODAN_API_KEY.readline().replace('\n', ''))
+        if os.path.isfile("SHODAN_TOKEN.txt"):
+            SHODAN_API_KEY = open("SHODAN_TOKEN.txt", "r")
+            token = SHODAN_API_KEY.readline().replace('\n', '')
+        else:
+            SHODAN_API_KEY = open("SHODAN_TOKEN.txt", "w+")
+            token = input("Your shodan token: ")
+            SHODAN_API_KEY.write(token)
+        api = shodan.Shodan(token)
         SHODAN_API_KEY.close()
 
         req = "port:554 country:RU"
